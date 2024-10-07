@@ -1,13 +1,20 @@
-body {
-    font-family: Arial, Helvetica, sans-serif;
-    font-size: 20px;
-    color: #555;
-    background-color: rgb(190, 248, 248);
+
+.full-screen-content {
+    width: 100vw;
     display: flex;
     flex-direction: column;
-    align-items: flex-start;
+    justify-content: center; /* Centers content horizontally */
+    text-align: center; 
+}
+
+body {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 1.5rem;
+    color: #555;
+    background-color: rgb(190, 248, 248);
     width: 100vw;
-    
+    margin-left: 0;
+    padding-left: 0;
 }
 
 .hidden {

@@ -8,13 +8,11 @@
         <link href="styles-weather.css" rel="stylesheet">
     </head>
     <body>
-    <div id="header">
+        <div class="full-screen-content">
         <h1>Weather 5-Day Forecast</h1>
-    </div>
 
         <!-- user input for cities, error message displayed if compare button is clicked without city entered -->
         <section id="weather-input">
-        <div id="inputBox">
             <p>
                 <label for="city1">City 1:</label>
                 <input type="text" id="city1">
@@ -25,12 +23,11 @@
                 <input type="text" id="city2">
                 <span class="error-msg hidden" id="error-value-city2">Enter a city</span>
             </p>
-        </div>
-        <div id="bottonBox">
             <p>
                 <button id="compareBtn">Compare</button>
             </p>
         </div>
+        
 
         <!-- table for first entered city, loading city message will be displayed while webpage waits for web API to return the forecasts. tables will be populated with the forecasts-->
         <section id="forecast" class="hidden">
