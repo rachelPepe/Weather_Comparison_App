@@ -47,9 +47,9 @@ function compareBtnClick() {
         hideElement("error-loading-city1");
         hideElement("error-loading-city2");
         showElement("loading-city1");
-        showText("loading-city1", `Loading ${city1}...`);
+        showMessage("loading-city1", `Loading ${city1}...`);
         showElement("loading-city2");
-        showText("loading-city2", `Loading ${city2}...`);
+        showMessage("loading-city2", `Loading ${city2}...`);
         hideElement("results-city1");
         hideElement("results-city2");
 
@@ -62,34 +62,38 @@ function compareBtnClick() {
 
 
 // REQUEST CITY FORECAST
-function getWeatherForecast(city, cityId) {
-    // create a URL to accesss the web API
+async function getWeatherForecast(city, cityId) {
+
+    // create url to request web API
     const endpoint = "https://api.openweathermap.org/data/2.5/forecast";
     const apiKey = "9635fc8c9579f24276dbd3d7902e9c7f";
     const queryString = `q=${encodeURI(city)}&units=imperial&appid=${apiKey}`;
-    const url  = `${endpoint}?${queryString}`;
+    const url = endpoint + "?" + queryString;
 
-    // use XMLHttpRequest tp may http request to web API
-    const xhr = new XMLHttpRequest();
+    // send http request to web api
+    const response = await fetch(url);
 
-    // call responseRecieved() when response is recieved
-    xhr.addEventListener("load", function () {
-        responseRecieved(xhr, cityId, city)
-    });
+    // no longer loading 
+    hideElement("loading-" + cityId);
 
-    // JSON response needs to be converted into an object
-    xhr.responseType = "json";
-
-    // send request
-    xhr.open("GET", url);
-    xhr.send();
+    // see if forecast was succesfully recieved 
+    if (response.ok) {
+        const jsonResult = await response.json();
+        displayForecast(cityId, jsonResult)
+    }
+    else {
+        // display appropriate error message
+        const errorId = "error-loading-" + cityId;
+        showElement(errorId);
+        showMessage(errorId, `Unable to load city "${city}".`)
+    }
 }
 
 
 
-// display the text in the element
-function showText(elementId, text) {
-    document.getElementById(elementId).innerHTML = text;
+// display the message in the element
+function showMessage(elementId, message) {
+    document.getElementById(elementId).innerHTML = message;
 }
 
 // show the element
@@ -104,42 +108,32 @@ function hideElement(elementId) {
 
 
 
-// RESPONSERECEIVED() AND SUPPORTING FUNCTIONS
+// DISPLAYFORECAST() AND SUPPORTING FUNCTIONS
 
 // display forecast recieved from JSON
-function responseRecieved(xhr, cityId, city) {
-    // no longer loading
-    hideElement("loading-" + cityId);
-
-    // 200 status indicates forecast successfully recieved 
-    if (xhr.status === 200) {
+function displayForecast(cityId, jsonResult) {
         showElement("results-" + cityId);
 
-        const cityName = xhr.response.city.name;
-        showText(cityId + "-name", cityName);
+        const cityName = jsonResult.city.name;
+        showMessage(cityId + "-name", cityName);
 
         // get 5-day forecast 
-        const forecast = getSummaryForecast(xhr.response.list);
+        const forecastMap = getSummaryForecast(jsonResult.list);
 
         // put forecast into city's table
         let day = 1;
-        for (const date in forecast) {
+        for (const date in forecastMap) {
             // only process the first 5 days
             if (day <= 5) {
-                showText(`${cityId}-day${day}-name`, getDayName(date));
-                showText(`${cityId}-day${day}-high`, Math.round(forecast[date].high) + "&deg;");
-                showText(`${cityId}-day${day}-low`, Math.round(forecast[date].low) + "&deg;");
-                showImage(`${cityId}-day${day}-image`, forecast[date].weather);
+                const dayForecast = forecastMap[date];
+                showMessage(`${cityId}-day${day}-name`, getDayName(date));
+                showMessage(`${cityId}-day${day}-high`, Math.round(dayForecast.high) + "&deg;");
+                showMessage(`${cityId}-day${day}-low`, Math.round(dayForecast.low) + "&deg;");
+                showImage(`${cityId}-day${day}-image`, dayForecast.weather);
             }
             day ++;
         }
-    }
-    else {
-        // display appropriate error message
-        const errorId = "error-loading-" + cityId;
-        showElement(errorId);
-        showText(errorId, `Unable to load city "${city}".`);
-    }
+    
 }
 
 // convert date string into mon, tue, ect
@@ -173,7 +167,7 @@ function showImage(elementId, weatherType) {
 // return map of objects that contain high, low, and weather for next 5 days
 function getSummaryForecast(forecastList) {
     // map for storing high, low weather
-    const forecast = [];
+    const forecast = {};
 
     // determine high and low for each day
     forecastList.forEach(function (item) {
